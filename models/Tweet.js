@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
-const TweetSchema = new mongoose.Schema({
-  name: {
-    type: String
+const tweetSchema = new mongoose.Schema({
+  _id: {
+    type: Number
   },
   username: {
     type: String
@@ -27,4 +27,4 @@ const TweetSchema = new mongoose.Schema({
   }
 });
 
-module.exports = Tweet = mongoose.model('tweet', TweetSchema);
+module.exports = mongoose.model('Tweet', tweetSchema);
