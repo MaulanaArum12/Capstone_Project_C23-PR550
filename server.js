@@ -12,7 +12,7 @@ dotenv.config();
 
 connectDB();
 
-app.use('/tweets', require('./routes/tweet'));
+app.use('/tweet', require('./routes/tweet'));
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, 
