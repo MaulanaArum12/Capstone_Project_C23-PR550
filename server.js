@@ -1,6 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const connectDB = require('./config/db');
+const connectDB = require('./db');
 const app = express();
 
 app.use(express.json({}));
@@ -8,15 +8,12 @@ app.use(express.json({
   extended: true
 }));
 
-dotenv.config({
-  path: './config/config.env'
-});
-
+dotenv.config();
 connectDB();
 
 app.use('/tweet', require('./routes/tweet'));
 
-const PORT = process.env.PORT || 8080;
+const { PORT } = process.env;
 app.listen(PORT, 
   console.log(`Server running on port: ${PORT}`)
 );
