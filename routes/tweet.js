@@ -3,7 +3,7 @@ const Tweet = require('../models/Tweet');
 const router = express.Router();
 
 router.get('/', async (res) => {
-  res.json('Tweets Connected!');
+  res.json({'Tweets Connected!'});
 })
 
 // GET Tweets by Topic
