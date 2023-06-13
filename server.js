@@ -9,9 +9,11 @@ app.use(express.json({
 }));
 
 dotenv.config();
-
 connectDB();
 
+app.get('/', async (res) => {
+  res.json('Netweezen! Ready to roll.');
+})
 app.use('/tweets', require('./routes/tweet'));
 
 const PORT = process.env.PORT || 8080;
