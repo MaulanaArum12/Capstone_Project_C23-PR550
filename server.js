@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./db');
 const app = express();
+const router = express.Router();
 
 app.use(express.json({}));
 app.use(express.json({
@@ -11,7 +12,7 @@ app.use(express.json({
 dotenv.config();
 connectDB();
 
-app.get('/', async (res) => {
+router.get('/', async (res) => {
   res.json('Netweezen! Ready to roll.');
 })
 app.use('/tweets', require('./routes/tweet'));
