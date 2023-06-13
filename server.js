@@ -11,7 +11,7 @@ app.use(express.json({
 dotenv.config();
 connectDB();
 
-app.get('/', async (res) => {
+app.get('/', async (req, res) => {
   res.json({status: 'Netweezen! Ready to roll.'});
 })
 app.use('/tweets', require('./routes/tweet'));

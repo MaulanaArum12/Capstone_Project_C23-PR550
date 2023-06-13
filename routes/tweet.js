@@ -2,8 +2,8 @@ const express = require ('express');
 const Tweet = require('../models/Tweet');
 const router = express.Router();
 
-router.get('/', async (res) => {
-  res.json({status: 'Tweets Connected!'});
+router.get('/', async (req, res) => {
+  res.json({status: 'Netweezen! Ready to roll.'});
 })
 
 // GET Tweets by Topic
