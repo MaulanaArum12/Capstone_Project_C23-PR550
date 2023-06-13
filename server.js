@@ -12,7 +12,7 @@ dotenv.config();
 connectDB();
 
 app.get('/', async (res) => {
-  res.json({'Netweezen! Ready to roll.'});
+  res.json({status: 'Netweezen! Ready to roll.'});
 })
 app.use('/tweets', require('./routes/tweet'));
 
