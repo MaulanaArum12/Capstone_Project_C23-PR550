@@ -1,6 +1,7 @@
 Flask
 gunicorn
 tensorflow
+google-cloud-storage
 nltk
 pandas
 pymongo
