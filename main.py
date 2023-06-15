@@ -20,7 +20,7 @@ app = Flask(__name__)
 
 def crawling_data(search):
   # Batasi jumlah hasil yang diambil
-  max_results = 100
+  max_results = 128
 
   # Tentukan nama file dengan format "<kueri pencarian>_<tanggal saat ini>.json"
   filename = f"{search.replace(' ', '')}.json"
