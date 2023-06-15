@@ -5,111 +5,125 @@ import pandas as pd
 import string
 import itertools
 import pymongo
+import snscrape.modules.twitter as sntwitter #snscrape not working in GCP
+
 import nltk
 from nltk.corpus import stopwords
 nltk.download("stopwords")
+
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import load_model
-import snscrape.modules.twitter as sntwitter
+
+from google.cloud import storage
+client = storage.Client()
+
+from io import StringIO
 from dotenv import load_dotenv
 load_dotenv()
 
 from flask import Flask
 app = Flask(__name__)
 
-def crawling_data(search):
-  # Batasi jumlah hasil yang diambil
-  max_results = 128
-
-  # Tentukan nama file dengan format "<kueri pencarian>_<tanggal saat ini>.json"
-  filename = f"{search.replace(' ', '')}.json"
-
-  USING_TOP_SEARCH = True
-  snscrape_params = '--jsonl --max-results'
-  twitter_search_params = ''
-
-  if USING_TOP_SEARCH:
-      twitter_search_params += "--top"
-
-  snscrape_search_query = f"snscrape {snscrape_params} {max_results} twitter-search {twitter_search_params} '{search}' > {filename}"
-  os.system(snscrape_search_query)
-
-  # Membaca file JSON hasil dari perintah CLI sebelumnya dan membuat dataframe pandas
-  dfr = pd.read_json(filename, lines=True)
-  if len(dfr) == 0:
-    print('Pencarian tidak ditemukan coba ganti keyword lain, keywordmu: ', search)
-    exit()
-
-  # Membuat kamus untuk mengganti nama kolom
-  new_columns = {
-      'conversationId': 'Conv. ID',
-      'url': 'URL',
-      'date': 'Date',
-      'rawContent': 'tweet',
-      'id': 'ID',
-      'replyCount': 'reply',
-      'retweetCount': 'Retweets',
-      'likeCount': 'like',
-      'quoteCount': 'Quotes',
-      'bookmarkCount': 'Bookmarks',
-      'lang': 'Language',
-      'links': 'Links',
-      'media': 'Media',
-      'retweetedTweet': 'Retweeted Tweet',
-      'username': 'username'
-  }
-
-  # Memilih kolom yang akan digunakan dan mengganti nama kolom menggunakan kamus yang telah dibuat
-  dfr = dfr.loc[:, ['username', 'rawContent', 'replyCount', 'likeCount']]
-  dfr = dfr.rename(columns=new_columns)
+def read_gcs(search):
+  bucket = client.get_bucket("netweezen-bucket")
+  blob = bucket.get_blob(f"{search.replace(' ', '')}.csv")
+  bt = blob.download_as_string() 
+  s = str(bt, "utf-8")
+  s = StringIO(s)
+  dfr = pd.read_csv(s)
   return dfr
 
-  # # Creating list to append tweet data to
-  # tweets = []
+# Crawling Tweet Data (snscrape not working in GCP)
+def crawling_data(search):
+  # # Way 1
+  # # Batasi jumlah hasil yang diambil
+  # max_results = 128
 
-  # # Using TwitterSearchScraper to scrape data and append tweets to list
-  # for i,tweet in enumerate(sntwitter.TwitterSearchScraper('jalan rusak').get_items()):
-  #     if i>100:
-  #         break
-  #     tweets.append([tweet.username, tweet.content, tweet.replyCount, tweet.likeCount])
+  # # Tentukan nama file dengan format "<kueri pencarian>_<tanggal saat ini>.json"
+  # filename = f"{search.replace(' ', '')}.json"
+
+  # USING_TOP_SEARCH = True
+  # snscrape_params = '--jsonl --max-results'
+  # twitter_search_params = ''
+
+  # if USING_TOP_SEARCH:
+  #     twitter_search_params += "--top"
+
+  # snscrape_search_query = f"snscrape {snscrape_params} {max_results} twitter-search {twitter_search_params} '{search}' > {filename}"
+  # os.system(snscrape_search_query)
+
+  # # Membaca file JSON hasil dari perintah CLI sebelumnya dan membuat dataframe pandas
+  # dfr = pd.read_json(filename, lines=True)
+  # if len(dfr) == 0:
+  #   print('Pencarian tidak ditemukan coba ganti keyword lain, keywordmu: ', search)
+  #   exit()
+
+  # # Membuat kamus untuk mengganti nama kolom
+  # new_columns = {
+  #     'conversationId': 'Conv. ID',
+  #     'url': 'URL',
+  #     'date': 'Date',
+  #     'rawContent': 'tweet',
+  #     'id': 'ID',
+  #     'replyCount': 'reply',
+  #     'retweetCount': 'Retweets',
+  #     'likeCount': 'like',
+  #     'quoteCount': 'Quotes',
+  #     'bookmarkCount': 'Bookmarks',
+  #     'lang': 'Language',
+  #     'links': 'Links',
+  #     'media': 'Media',
+  #     'retweetedTweet': 'Retweeted Tweet',
+  #     'username': 'username'
+  # }
+
+  # # Memilih kolom yang akan digunakan dan mengganti nama kolom menggunakan kamus yang telah dibuat
+  # dfr = dfr.loc[:, ['username', 'rawContent', 'replyCount', 'likeCount']]
+  # dfr = dfr.rename(columns=new_columns)
+  # return dfr
+
+  # # Way 2
+  # Creating list to append tweet data to
+  tweets = []
+
+  # Using TwitterSearchScraper to scrape data and append tweets to list
+  for i,tweet in enumerate(sntwitter.TwitterSearchScraper(f'{search}').get_items()):
+      if i>100:
+        break
+      tweets.append([tweet.username, tweet.content, tweet.replyCount, tweet.likeCount])
       
-  # # Creating a dataframe from the tweets list above
-  # df = pd.DataFrame(tweets, columns=['username', 'tweet', 'reply', 'like',])
-  # return df
+  # Creating a dataframe from the tweets list above
+  dfr = pd.DataFrame(tweets, columns=['username', 'tweet', 'reply', 'like',])
+  return dfr
 
-# Stopwords Function
+# Stopwords & Clean Functions
 def split_into_words(tweet):
   words = tweet.split()
   return words
-
 def to_lower_case(words):
   words = [word.lower() for word in words]
   return words
-
 def remove_punctuation(words):
   re_punc = re.compile('[%s]' % re.escape(string.punctuation))
   stripped = [re_punc.sub('', w) for w in words]
   return stripped
-
 def remove_stopwords(words):
   stop_words = set(stopwords.words('indonesian'))
   stop_words1 = set(stopwords.words('english'))
   words = [w for w in words if not w in stop_words if not w in stop_words1]
   return words
-
 def keep_alphabetic(words):
   words = [word for word in words if word.isalpha()]
   return words
-
 def to_sentence(words):
   return ' '.join(words)
-
 def tweet(words):
   tweet_tokenizer = nltk.tokenize.TweetTokenizer(strip_handles=True, reduce_len=True)
   tweet = tweet_tokenizer.tokenize(words)
   return tweet
 
+# Clean Tweet
 def denoise_text(tweet):
   stop = set(stopwords.words('indonesian'))
   stop1 = set(stopwords.words('english'))
@@ -124,8 +138,8 @@ def denoise_text(tweet):
   words = remove_stopwords(words)
   return to_sentence(words)
 
+# Tokenizer Process
 def clean_tokenizer(data):
-  # Clean & Tokenizer Process
   data = data.apply(denoise_text)
   tokenizer = Tokenizer(num_words = 10000, oov_token = '<OOV>')
   tokenizer.fit_on_texts(data)
@@ -133,8 +147,8 @@ def clean_tokenizer(data):
   test_padded_sequences = pad_sequences(test_sequences, maxlen=50, padding='post', truncating='post')
   return test_padded_sequences
 
+# Model Predict
 def predict(df, test_padded_sequences):
-  # Model Predict
   model = load_model("model.h5")
   x = model.predict(test_padded_sequences)
   df_test_padded = pd.DataFrame({'accuracy': x.flatten()})
@@ -144,8 +158,8 @@ def predict(df, test_padded_sequences):
   df['asp_score'] = int_list
   return df
 
+# Modify Results
 def result(df, data, search):
-  # Modify Results
   df['clean'] = data.apply(denoise_text)
   column_order = ['username', 'tweet', 'clean', 'reply', 'like', 'asp_score']
   results = df.reindex(columns=column_order)
@@ -169,9 +183,9 @@ def insert_db(results):
 
 @app.route("/netweezen-job")
 def main():
-  # df = pd.read_csv("jalanrusak.csv")
   search = "jalan rusak"
-  df = crawling_data(search)
+  df = read_gcs(search)
+  # df = crawling_data(search) #snscrape not working in GCP
   data = df['tweet']
   test_padded_sequences = clean_tokenizer(data)
   df = predict(df, test_padded_sequences)
