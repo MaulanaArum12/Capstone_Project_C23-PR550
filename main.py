@@ -18,15 +18,12 @@ load_dotenv()
 from flask import Flask
 app = Flask(__name__)
 
-def crawling_data():
+def crawling_data(search):
   # Batasi jumlah hasil yang diambil
   max_results = 100
 
-  # Gunakan Twitter search untuk mencari tweet yang di-favoritkan minimal 10000 kali dan berbahasa Indonesia
-  twitter_search = "jalan rusak"
-
   # Tentukan nama file dengan format "<kueri pencarian>_<tanggal saat ini>.json"
-  filename = f"{twitter_search.replace(' ', '_').replace(':', '-')}_{datetime.date.today().strftime('%Y-%m-%d')}.json"
+  filename = f"{search.replace(' ', '')}.json"
 
   USING_TOP_SEARCH = True
   snscrape_params = '--jsonl --max-results'
@@ -35,13 +32,13 @@ def crawling_data():
   if USING_TOP_SEARCH:
       twitter_search_params += "--top"
 
-  snscrape_search_query = f"snscrape {snscrape_params} {max_results} twitter-search {twitter_search_params} '{twitter_search}' > {filename}"
+  snscrape_search_query = f"snscrape {snscrape_params} {max_results} twitter-search {twitter_search_params} '{search}' > {filename}"
   os.system(snscrape_search_query)
 
   # Membaca file JSON hasil dari perintah CLI sebelumnya dan membuat dataframe pandas
   dfr = pd.read_json(filename, lines=True)
   if len(dfr) == 0:
-    print('Pencarian tidak ditemukan coba ganti keyword lain, keywordmu: ', twitter_search)
+    print('Pencarian tidak ditemukan coba ganti keyword lain, keywordmu: ', search)
     exit()
 
   # Membuat kamus untuk mengganti nama kolom
@@ -172,9 +169,9 @@ def insert_db(results):
 
 @app.route("/netweezen-job")
 def main():
-  # df = crawling_data()
-  df = pd.read_csv("jalanrusak.csv")
-  search = "jalanrusak"
+  # df = pd.read_csv("jalanrusak.csv")
+  search = "jalan rusak"
+  df = crawling_data(search)
   data = df['tweet']
   test_padded_sequences = clean_tokenizer(data)
   df = predict(df, test_padded_sequences)
