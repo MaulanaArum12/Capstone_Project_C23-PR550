@@ -1,0 +1,46 @@
+<resources>
+    <string name="app_name">Netweezen</string>
+    <string name="action_home">Home</string>
+    <string name="action_topic">Topic</string>
+    <string name="action_account">User</string>
+    <string name="action_more_tweet">More Tweet</string>
+    <string name="action_topic_detail">Topic Detail</string>
+    <string name="action_tweet_detail">Tweet Detail</string>
+    <string name="toko">Produk</string>
+    <string name="more_tweets">More Tweets</string>
+    <string name="reply_tweets">Reply Tweets</string>
+    <string name="description">Deskripsi</string>
+    <string name="copyright" translatable="false">© 2023 Netweezen.id</string>
+    <string name="total_aspiration">Total Aspirations</string>
+    <string name="aspiration_score">Aspiration Score</string>
+    <string name="title_aspiration_s">Aspiration Tweets</string>
+    <string name="title_aspiration">Aspiration Tweet</string>
+    <string name="title_user_tweet">User Tweets</string>
+    <string name="click_for_detail">Click tweet for details</string>
+    <string name="see_clear">See cleaned aspiration tweet</string>
+    <string name="see_original">See original tweet from user</string>
+    <string name="like">Like</string>
+    <string name="reply">Reply</string>
+    <string name="score">100</string>
+    <string name="username">Agus Tuir</string>
+    <string name="id_example">090091239109</string>
+    <string name="img">image</string>
+    <string name="tweet_content">Jalan di Rumpin Rusak Parah, Padahal Kerap Dilalui Pejabat</string>
+    <string name="tweet_content_real">Jalan di Rumpin Rusak Parah, Padahal Kerap Dilalui Pejabat  #Rumpin #Rusak #Parah #Jalan #Pejabat #PemkabBogor #Mengeluhkan #Lumpur</string>
+    <string-array name="data_name">
+        <item>Jalan Rusak</item>
+        <item>Ekonomi</item>
+        <item>Banjir</item>
+        <item>Korupsi</item>
+        <item>Infrastruktur</item>
+        <item>Kriminal</item>
+    </string-array>
+    <integer-array name="data_photo">
+        <item>@drawable/jalanrusak_dark</item>
+        <item>@drawable/ekonomi_dark</item>
+        <item>@drawable/banjir_dark</item>
+        <item>@drawable/korupsi_dark</item>
+        <item>@drawable/infrastruktur_dark</item>
+        <item>@drawable/kriminal_dark</item>
+    </integer-array>
+</resources>
